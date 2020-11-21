@@ -1,48 +1,30 @@
 const logger = require('../../utils/logger');
 
 module.exports = function MonitorService(gladys) {
-  const osu = require('node-os-utils')
+  const osu = require('node-os-utils');
+
+  let interval;
+  let lastValue = {};
 
   /**
    * @public
-   * @description This function starts the ExampleService service
+   * @description This function grab monitoring value
    * @example
-   * gladys.services.example.start();
+   * gladys.services.monitor.grabMonitoringValues();
    */
-  async function start() {
-    logger.log('Starting Monitor service');
-  }
+  async function grabMonitoringValues() {
+    logger.debug('Grab monitoring value')
+    const freeCPU = (await osu.cpu.free()).toFixed(2);
 
-  /**
-   * @public
-   * @description This function stops the ExampleService service
-   * @example
-   * gladys.services.example.stop();
-   */
-  async function stop() {
-    logger.log('stopping Monitor service');
-  }
-
-  /**
-   * @description Get the monitor.
-   * @param {Object} options - Options parameters.
-   * @example
-   * gladys.services.monitor.monitor.get({
-   * });
-   */
-  async function get(options) {
-
-    const freecpu = await osu.cpu.free();
-
-    const monitoring = {
+    lastValue = {
       cpu: {
         count: osu.cpu.count(),
-        usage: 100 - freecpu,
-        free: freecpu,
+        usage: (100 - freeCPU).toFixed(2),
+        free: freeCPU,
         loadavg: {
-          1: osu.cpu.loadavgTime(1),
-          5: osu.cpu.loadavgTime(5),
-          15: osu.cpu.loadavgTime(15)
+          1: osu.cpu.loadavgTime(1).toFixed(2),
+          5: osu.cpu.loadavgTime(5).toFixed(2),
+          15: osu.cpu.loadavgTime(15).toFixed(2)
         }
       },
       drive: await osu.drive.info(),
@@ -52,16 +34,51 @@ module.exports = function MonitorService(gladys) {
         uptime: osu.os.uptime(),
         platform: osu.os.platform(),
       },
-      network: await osu.netstat.inOut()
     };
-    return monitoring;
   }
+
+  /**
+   * @public
+   * @description This function starts the Monitor service
+   * and start interval to grap monitoring values every second
+   * @example
+   * gladys.services.example.start();
+   */
+  async function start() {
+    logger.log('Starting Monitor service');
+    interval = setInterval(grabMonitoringValues, 1000);
+  }
+
+  /**
+   * @public
+   * @description This function stops the Monitor service
+   * and clear sync interval
+   * @example
+   * gladys.services.example.stop();
+   */
+  async function stop() {
+    logger.log('stopping Monitor service');
+    clearInterval(interval);
+  }
+
+  /**
+   * @description Get the monitor.
+   * @param {Object} options - Options parameters.
+   * @example
+   * gladys.services.monitor.monitor.get({
+   * });
+   */
+  function get(options) {
+    return lastValue;
+  }
+
 
   return Object.freeze({
     start,
     stop,
+    grabMonitoringValues,
     monitor: {
       get,
-    },
+    }
   });
 };

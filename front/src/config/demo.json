@@ -119,6 +119,9 @@
         {
           "type": "devices-in-room",
           "room": "kitchen"
+        },
+        {
+          "type": "monitoring"
         }
       ]
     ],
