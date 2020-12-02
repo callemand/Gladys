@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const path = require('path');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 const notFoundMiddleware = require('./middlewares/notFoundMiddleware');
+const { meterMiddleware } = require('./middlewares/meterMiddleware');
 const WebsocketManager = require('./websockets');
 const logger = require('../utils/logger');
 const { setupRoutes } = require('./setupRoutes');
@@ -27,6 +28,10 @@ function start(gladys, port, options) {
 
   // parse json
   app.use(express.json());
+
+  logger.debug('BONSOIR')
+  app.use(meterMiddleware(gladys));
+
 
   if (options.serveFront) {
     // serving static app

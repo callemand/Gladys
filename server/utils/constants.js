@@ -120,6 +120,7 @@ const EVENTS = {
     DOWNLOAD_UPGRADE: 'system.download-upgrade',
     CHECK_UPGRADE: 'system.check-upgrade',
     TIMEZONE_CHANGED: 'system.timezone-changed',
+    MONITOR_CHANGED: 'system.monitor-changed'
   },
   WEBSOCKET: {
     SEND: 'websocket.send',
@@ -400,6 +401,9 @@ const WEBSOCKET_MESSAGE_TYPES = {
     STATE: 'bluetooth.status',
     DISCOVER: 'bluetooth.discover',
   },
+  MONITOR: {
+    UPDATED: 'monitor.updated'
+  }
 };
 
 const DASHBOARD_TYPE = {
@@ -412,6 +416,7 @@ const DASHBOARD_BOX_TYPE = {
   USER_PRESENCE: 'user-presence',
   CAMERA: 'camera',
   DEVICES_IN_ROOM: 'devices-in-room',
+  MONITORING: 'monitoring',
 };
 
 const ERROR_MESSAGES = {

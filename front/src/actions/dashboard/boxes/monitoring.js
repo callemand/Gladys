@@ -1,7 +1,6 @@
-import { RequestStatus, GetWeatherStatus } from '../../../utils/consts';
-import { ERROR_MESSAGES } from '../../../../../server/utils/constants';
+import {RequestStatus} from '../../../utils/consts';
+import {WEBSOCKET_MESSAGE_TYPES} from '../../../../../server/utils/constants';
 import createBoxActions from '../boxActions';
-import get from 'get-value';
 
 const BOX_KEY = 'Monitoring';
 
@@ -9,20 +8,29 @@ function createActions(store) {
     const boxActions = createBoxActions(store);
 
     const actions = {
-        async getMonitorValues(state, box, x, y) {
-            //boxActions.updateBoxStatus(state, BOX_KEY, x, y, RequestStatus.Getting);
-            try {
-                const systemInfos = await state.httpClient.get(`/api/v1/system/info`);
-                systemInfos.memoryUsage = ((get(systemInfos, 'freemem') / get(systemInfos, 'totalmem')) * 100).toFixed(2);
+        initialize(state, box, x, y) {
+            boxActions.updateBoxStatus(state, BOX_KEY, x, y, RequestStatus.Getting);
+            state.session.dispatcher.addListener(
+                WEBSOCKET_MESSAGE_TYPES.MONITOR.UPDATED,
+                (payload) => {
+                    boxActions.updateBoxStatus(state, BOX_KEY, x, y, RequestStatus.Success);
+                    this.valuesChanged(payload)
+                }
+            );
+        },
 
-                boxActions.mergeBoxData(state, BOX_KEY, x, y, {
-                    systemInfos
-                });
-                boxActions.updateBoxStatus(state, BOX_KEY, x, y, RequestStatus.Success);
-            } catch (e) {
-                boxActions.updateBoxStatus(state, BOX_KEY, x, y, RequestStatus.Error);
-            }
+        valuesChanged(state, values){
+            console.log(values);
+            values.cpu = values.cpu.toFixed(2);
+            values.memory = values.memory / 1024 / 1024
+            values.memory = values.memory.toFixed(0);
+            values.requestsPerSecond = values.requestsPerSecond.toFixed(2);
+
+            store.setState({
+                monitoringValues: values
+            });
         }
+
     };
     return Object.assign({}, actions);
 }

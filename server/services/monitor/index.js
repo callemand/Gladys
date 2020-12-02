@@ -1,10 +1,12 @@
 const logger = require('../../utils/logger');
+const { EVENTS, WEBSOCKET_MESSAGE_TYPES } = require('../../utils/constants');
 
 module.exports = function MonitorService(gladys) {
-  const osu = require('node-os-utils');
+  const pidusage = require('pidusage');
+  const collection = require('measured-core').createCollection();
+
 
   let interval;
-  let lastValue = {};
 
   /**
    * @public
@@ -12,29 +14,24 @@ module.exports = function MonitorService(gladys) {
    * @example
    * gladys.services.monitor.grabMonitoringValues();
    */
-  async function grabMonitoringValues() {
-    logger.debug('Grab monitoring value')
-    const freeCPU = (await osu.cpu.free()).toFixed(2);
+    async function grabMonitoringValues() {
 
-    lastValue = {
-      cpu: {
-        count: osu.cpu.count(),
-        usage: (100 - freeCPU).toFixed(2),
-        free: freeCPU,
-        loadavg: {
-          1: osu.cpu.loadavgTime(1).toFixed(2),
-          5: osu.cpu.loadavgTime(5).toFixed(2),
-          15: osu.cpu.loadavgTime(15).toFixed(2)
-        }
-      },
-      drive: await osu.drive.info(),
-      memory: await osu.mem.info(),
-      os: {
-        ip: osu.os.ip(),
-        uptime: osu.os.uptime(),
-        platform: osu.os.platform(),
-      },
+    const meterValues = collection.toJSON();
+    const pidUsageValues = await pidusage(process.pid);
+
+    const stats = {
+        cpu: pidUsageValues.cpu,
+        memory: pidUsageValues.memory,
+      requestsPerSecond: 0,
     };
+    if(meterValues.requestsPerSecond !== undefined){
+      stats.requestsPerSecond = meterValues.requestsPerSecond.mean;
+    }
+
+    gladys.event.emit(EVENTS.WEBSOCKET.SEND_ALL, {
+      type: WEBSOCKET_MESSAGE_TYPES.MONITOR.UPDATED,
+      payload: stats
+    });
   }
 
   /**
@@ -46,7 +43,7 @@ module.exports = function MonitorService(gladys) {
    */
   async function start() {
     logger.log('Starting Monitor service');
-    interval = setInterval(grabMonitoringValues, 1000);
+    interval = setInterval(grabMonitoringValues, 3000);
   }
 
   /**
@@ -62,14 +59,13 @@ module.exports = function MonitorService(gladys) {
   }
 
   /**
-   * @description Get the monitor.
-   * @param {Object} options - Options parameters.
+   * @description Get the collection.
+   * @return Object.
    * @example
-   * gladys.services.monitor.monitor.get({
-   * });
+   * gladys.services.monitor.getCollection();
    */
-  function get(options) {
-    return lastValue;
+  function getCollection() {
+    return collection;
   }
 
 
@@ -77,8 +73,6 @@ module.exports = function MonitorService(gladys) {
     start,
     stop,
     grabMonitoringValues,
-    monitor: {
-      get,
-    }
+    getCollection,
   });
 };

@@ -22,7 +22,6 @@ export class Dispatcher {
         listeners: []
       };
     }
-
     this.events[event].listeners.push(callback);
   }
 
@@ -41,7 +40,7 @@ export class Dispatcher {
   dispatch(event, details) {
     // Check if this event not exists
     if (this.events[event] === undefined) {
-      // console.error(`This event: ${event} does not exist`);
+      //console.error(`This event: ${event} does not exist`);
       return false;
     }
 

@@ -1,5 +1,5 @@
 {
-  "name": "gladys-example",
+  "name": "gladys-monitor",
   "main": "index.js",
   "os": [
     "darwin",
@@ -13,6 +13,7 @@
   ],
   "scripts": {},
   "dependencies": {
-    "node-os-utils": "^1.3.2"
+    "measured-core": "^2.0.0",
+    "pidusage": "^2.0.21"
   }
 }

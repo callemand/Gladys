@@ -1,6 +1,7 @@
 import {Component} from "preact";
 import { connect } from 'unistore/preact';
 import {DASHBOARD_BOX_DATA_KEY, DASHBOARD_BOX_STATUS_KEY, RequestStatus} from "../../../utils/consts";
+import {WEBSOCKET_MESSAGE_TYPES} from "../../../../../server/utils/constants"
 import {Text} from "preact-i18n";
 import actions from '../../../actions/dashboard/boxes/monitoring';
 import get from "get-value";
@@ -37,7 +38,7 @@ const MonitoringBox = ({ children, ...props }) => (
                 </div>
             </div>
         )}
-        {props.boxStatus === RequestStatus.Getting && !props.monitoringValues && (
+        {props.boxStatus === RequestStatus.Getting && (
             <div class="card-body">
                 <div class="dimmer active">
                     <div class="loader" />
@@ -50,62 +51,62 @@ const MonitoringBox = ({ children, ...props }) => (
                 maxHeight: '15rem',
                 padding: '1rem'
             }}>
-                <ul className="list-unstyled list-separated" style={zeroMarginBottom}>
-                    {props.monitoringValues.map(monitoringValue => (
+                {props.monitoringValues && (
+                    <ul className="list-unstyled list-separated" style={zeroMarginBottom}>
                         <li className="list-separated-item">
                             <div className="row align-items-center">
                                 <div className="col-8">
-                                    <span>{monitoringValue.name}</span>
+                                    <Text id="dashboard.boxes.monitoring.cpu" />
                                 </div>
                                 <div className="col-4">
-                                    <Text id="global.percentValue" fields={{value: monitoringValue.value}}/>
+                                    <Text id="global.percentValue" fields={{value: props.monitoringValues.cpu}}/>
                                 </div>
                             </div>
                         </li>
-                    ))}
-                </ul>
+                        <li className="list-separated-item">
+                            <div className="row align-items-center">
+                                <div className="col-8">
+                                    <Text id="dashboard.boxes.monitoring.memory" />
+                                </div>
+                                <div className="col-4">
+                                    <Text id="global.mbValue" fields={{value: props.monitoringValues.memory}}/>
+                                </div>
+                            </div>
+                        </li>
+                        <li className="list-separated-item">
+                            <div className="row align-items-center">
+                                <div className="col-8">
+                                    <Text id="dashboard.boxes.monitoring.requestPerSec" />
+                                </div>
+                                <div className="col-4">
+                                     {props.monitoringValues.requestsPerSecond}
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                )}
             </div>
         )}
     </div>
 );
 
 
-@connect('DashboardBoxDataMonitoring,DashboardBoxStatusMonitoring', actions)
+@connect('DashboardBoxDataMonitoring,DashboardBoxStatusMonitoring,session,monitoringValues', actions)
 class MonitoringBoxComponent extends Component {
+
     componentDidMount() {
-        this.props.getMonitorValues(this.props.box, this.props.x, this.props.y);
-        // refresh weather every interval
-        setInterval(() => this.props.getMonitorValues(this.props.box, this.props.x, this.props.y), BOX_REFRESH_INTERVAL_MS);
+        this.props.initialize(this.props.box, this.props.x, this.props.y);
     }
+
     render(props, {}) {
-        const boxData = get(props, `${DASHBOARD_BOX_DATA_KEY}Monitoring.${props.x}_${props.y}`);
         const boxStatus = get(props, `${DASHBOARD_BOX_STATUS_KEY}Monitoring.${props.x}_${props.y}`);
-
-
-        const systemInfos = get(boxData, 'systemInfos');
-
-        let monitoringValues;
-
-        if(systemInfos !== undefined){
-            monitoringValues = [
-                {
-                    name: 'MemoryUsage',
-                    value: systemInfos.memoryUsage
-                },
-                {
-                    name: 'Toto',
-                    value: systemInfos.memoryUsage
-                }
-
-            ];
-        }
-
+        console.log(`${DASHBOARD_BOX_STATUS_KEY}Monitoring.${props.x}_${props.y}`);
+        console.log(props);
 
         return (
             <MonitoringBox
                 {...props}
                 boxStatus={boxStatus}
-                monitoringValues={monitoringValues}
             />
         );
     }
