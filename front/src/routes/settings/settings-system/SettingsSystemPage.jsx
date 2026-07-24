@@ -9,6 +9,7 @@ import SettingsSystemTimeExpiryState from './SettingsSystemTimeExpiryState';
 import SettingsSystemDatabaseCleaning from './SettingsSystemDatabaseCleaning';
 import SettingsSystemDuckDbMigration from './SettingsSystemDuckDbMigration';
 import SettingsSystemDownloadLogs from './SettingsSystemDownloadLogs';
+import SettingsSystemHostPower from './SettingsSystemHostPower';
 
 const SystemPage = ({ children, ...props }) => (
   <SettingsLayout>
@@ -133,6 +134,7 @@ const SystemPage = ({ children, ...props }) => (
         <SettingsSystemDownloadLogs />
         <SettingsSystemDatabaseCleaning />
         <SettingsSystemContainers />
+        <SettingsSystemHostPower systemInfos={props.systemInfos} />
       </div>
     </div>
   </SettingsLayout>

@@ -42,6 +42,54 @@ describe('POST /api/v1/system/vacuum', () => {
   });
 });
 
+describe('POST /api/v1/system/reboot', () => {
+  let rebootHostStub;
+
+  beforeEach(() => {
+    rebootHostStub = sinon.stub(global.TEST_GLADYS_INSTANCE.system, 'rebootHost').resolves(null);
+  });
+
+  afterEach(() => {
+    rebootHostStub.restore();
+  });
+
+  it('should reboot the host', async () => {
+    await authenticatedRequest
+      .post('/api/v1/system/reboot')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).to.have.property('success', true);
+        expect(res.body).to.have.property('message');
+      });
+    sinon.assert.calledOnce(rebootHostStub);
+  });
+});
+
+describe('POST /api/v1/system/shutdown-host', () => {
+  let shutdownHostStub;
+
+  beforeEach(() => {
+    shutdownHostStub = sinon.stub(global.TEST_GLADYS_INSTANCE.system, 'shutdownHost').resolves(null);
+  });
+
+  afterEach(() => {
+    shutdownHostStub.restore();
+  });
+
+  it('should shutdown the host', async () => {
+    await authenticatedRequest
+      .post('/api/v1/system/shutdown-host')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).to.have.property('success', true);
+        expect(res.body).to.have.property('message');
+      });
+    sinon.assert.calledOnce(shutdownHostStub);
+  });
+});
+
 describe('POST /api/v1/system/upgrade', () => {
   it('should upgrade', async () => {
     const res = await authenticatedRequest

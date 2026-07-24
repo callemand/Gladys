@@ -28,6 +28,9 @@ const { checkIfGladysUpgraded } = require('./system.checkIfGladysUpgraded');
 const { setDuckDbTimezone } = require('./system.setDuckDbTimezone');
 
 const { shutdown } = require('./system.shutdown');
+const { rebootHost } = require('./system.rebootHost');
+const { shutdownHost } = require('./system.shutdownHost');
+const { isHostPowerManagementAvailable } = require('./system.isHostPowerManagementAvailable');
 
 const System = function System(sequelize, event, config, job, variable, user, message, brain) {
   this.downloadUpgradeError = null;
@@ -77,5 +80,8 @@ System.prototype.getNetworkMode = getNetworkMode;
 System.prototype.vacuum = vacuum;
 System.prototype.setDuckDbTimezone = setDuckDbTimezone;
 System.prototype.shutdown = shutdown;
+System.prototype.rebootHost = rebootHost;
+System.prototype.shutdownHost = shutdownHost;
+System.prototype.isHostPowerManagementAvailable = isHostPowerManagementAvailable;
 
 module.exports = System;
